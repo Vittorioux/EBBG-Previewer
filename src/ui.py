@@ -2,7 +2,7 @@
 
 
 
-# EarthBound Battle Background Previewer v1.0
+# EarthBound Battle Background Previewer
 
 # https://github.com/Vittorioux/EBBG-Previewer
 
@@ -42,18 +42,25 @@ if __name__ == "__main__":
 	# --------------------- Initialization ----------------------
 	# -----------------------------------------------------------
 	
+	# Detect if we're running the .EXE or from source.
+	
+	if getattr(sys, 'frozen', False):
+		base_path = os.path.dirname(sys.executable)
+	else:
+		base_path = os.path.dirname(__file__)
+	
 	# Create data folder and file if they dons't exist.
 	
-	if not os.path.exists(os.path.join(os.path.dirname(sys.executable), DATA_FOLDER_NAME)):
-		os.makedirs(os.path.join(os.path.dirname(sys.executable), DATA_FOLDER_NAME))
+	if not os.path.exists(os.path.join(base_path, DATA_FOLDER_NAME)):
+		os.makedirs(os.path.join(base_path, DATA_FOLDER_NAME))
 	
-	if not os.path.exists(os.path.join(os.path.dirname(sys.executable), DATA_FILE_NAME)):
-		with open(DATA_FILE_NAME, "w") as data_f:
+	if not os.path.exists(os.path.join(base_path, DATA_FILE_NAME)):
+		with open(os.path.join(base_path, DATA_FILE_NAME), "w") as data_f:
 			data_f.write(DEFAULT_DATA)
 	
 	# Load dict 'data'.
 	
-	data = l.read_data_file(DATA_FILE_NAME)
+	data = l.read_data_file(os.path.join(base_path, DATA_FILE_NAME))
 	
 	program_geometry = f"{data["width"]}x{data["height"]}+{data["x_pos"]}+{data["y_pos"]}"   # These four names are hardcoded.
 	
@@ -64,11 +71,11 @@ if __name__ == "__main__":
 	# Fetch icon.
 	
 	try:
-		base_path = sys._MEIPASS
+		assets_path = sys._MEIPASS
 	except Exception:
-		base_path = os.path.abspath("assets")
+		assets_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets"))
 	
-	root.iconbitmap(os.path.join(base_path, "icon.ico"))
+	root.iconbitmap(os.path.join(assets_path, "icon.ico"))
 	
 	# Title and geometry.
 	
@@ -328,7 +335,7 @@ if __name__ == "__main__":
 	
 	# Action to perform when closing the application.
 	
-	root.protocol("WM_DELETE_WINDOW", lambda: (l.write_data_file(DATA_FILE_NAME, fields, root), root.destroy()))
+	root.protocol("WM_DELETE_WINDOW", lambda: (l.write_data_file(os.path.join(base_path, DATA_FILE_NAME), fields, root), root.destroy()))
 	
 	# Load saved fields from the data file.
 	
@@ -336,6 +343,10 @@ if __name__ == "__main__":
 		if key in c.t_field_names:
 			fields[key].delete(0, tk.END)
 			fields[key].insert(0, str(value))
+	
+	# Update preview image frames (only really makes a difference if both BG fields start empty).
+	
+	l.update_preview(fields, img_frame_1, img_frame_2)
 	
 	# Run the application.
 	

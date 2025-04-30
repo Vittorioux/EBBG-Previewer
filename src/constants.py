@@ -2,7 +2,7 @@
 
 
 
-# EarthBound Battle Background Previewer v1.0
+# EarthBound Battle Background Previewer
 
 # https://github.com/Vittorioux/EBBG-Previewer
 
@@ -38,20 +38,14 @@ TEMP_PALETTE_OUT_1 = os.path.join(DATA_FOLDER_NAME, "temp_palette_out_1.bin")
 TEMP_TILES_OUT_1 = os.path.join(DATA_FOLDER_NAME, "temp_tiles_out_1.bin")
 TEMP_TILEMAP_OUT_1 = os.path.join(DATA_FOLDER_NAME, "temp_tilemap_out_1.bin")
 
-TEMP_BG1_DATA_OUT = [TEMP_PALETTE_OUT_1, TEMP_TILES_OUT_1, TEMP_TILEMAP_OUT_1]
-
 #BG2.
 TEMP_PALETTE_OUT_2 = os.path.join(DATA_FOLDER_NAME, "temp_palette_out_2.bin")
 TEMP_TILES_OUT_2 = os.path.join(DATA_FOLDER_NAME, "temp_tiles_out_2.bin")
 TEMP_TILEMAP_OUT_2 = os.path.join(DATA_FOLDER_NAME, "temp_tilemap_out_2.bin")
 
-TEMP_BG2_DATA_OUT = [TEMP_PALETTE_OUT_2, TEMP_TILES_OUT_2, TEMP_TILEMAP_OUT_2]
-
 # Temp images with corrected formats.
 TEMP_IMG_OUT_1 = os.path.join(DATA_FOLDER_NAME, "temp_img_out_1.png")
 TEMP_IMG_OUT_2 = os.path.join(DATA_FOLDER_NAME, "temp_img_out_2.png")
-
-TEMP_IMGS_OUT = [TEMP_IMG_OUT_1, TEMP_IMG_OUT_2]
 
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
@@ -59,7 +53,7 @@ TEMP_IMGS_OUT = [TEMP_IMG_OUT_1, TEMP_IMG_OUT_2]
 
 # Program version.
 
-VERSION = "1.0"
+VERSION = "1.01"
 
 # 'About' text.
 

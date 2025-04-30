@@ -2,7 +2,7 @@
 
 
 
-# EarthBound Battle Background Previewer v1.0
+# EarthBound Battle Background Previewer
 
 # https://github.com/Vittorioux/EBBG-Previewer
 
@@ -79,10 +79,6 @@ def browse_file(field):
 	if route:
 		field.delete(0, tk.END)
 		field.insert(0, route)
-	
-	# Update preview images.
-	
-	
 
 # --------------------------------------------------------------------
 # ------------------------- Write data file --------------------------
@@ -135,7 +131,7 @@ def read_data_file(file):
 	return settings
 
 # --------------------------------------------------------------------
-# -------------------------- Read data file --------------------------
+# ---------------------- Update images preview -----------------------
 # --------------------------------------------------------------------
 
 def update_preview(fields, img_frame_1, img_frame_2, *args):
@@ -169,6 +165,34 @@ def update_preview(fields, img_frame_1, img_frame_2, *args):
 # --------------------------------------------------------------------
 
 def execute(fields, check_vars):
+	
+	# Get base path and assets path.
+	
+	if getattr(sys, 'frozen', False):
+		base_path = os.path.dirname(sys.executable)
+	else:
+		base_path = os.path.dirname(__file__)
+	
+	try:
+		assets_path = sys._MEIPASS
+	except Exception:
+		assets_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets"))
+	
+	# Generate paths.
+	
+	img_1_out_path = os.path.join(base_path, c.TEMP_IMG_OUT_1)
+	img_2_out_path = os.path.join(base_path, c.TEMP_IMG_OUT_2)
+	img_out_paths = [img_1_out_path, img_2_out_path]
+	
+	temp_palette_out_1_path = os.path.join(base_path, c.TEMP_PALETTE_OUT_1)
+	temp_tiles_out_1_path = os.path.join(base_path, c.TEMP_TILES_OUT_1)
+	temp_tilemap_out_1_path = os.path.join(base_path, c.TEMP_TILEMAP_OUT_1)
+	temp_bg1_data_out_paths = [temp_palette_out_1_path, temp_tiles_out_1_path, temp_tilemap_out_1_path]
+	
+	temp_palette_out_2_path = os.path.join(base_path, c.TEMP_PALETTE_OUT_2)
+	temp_tiles_out_2_path = os.path.join(base_path, c.TEMP_TILES_OUT_2)
+	temp_tilemap_out_2_path = os.path.join(base_path, c.TEMP_TILEMAP_OUT_2)
+	temp_bg2_data_out_paths = [temp_palette_out_2_path, temp_tiles_out_2_path, temp_tilemap_out_2_path]
 	
 	# Fetch files.
 	
@@ -248,7 +272,7 @@ def execute(fields, check_vars):
 					new_pal.extend([r, g, b])
 				
 				img.putpalette(new_pal)
-				img.save(c.TEMP_IMGS_OUT[idx])
+				img.save(img_out_paths[idx])
 			
 			else:
 				raise_error(console, 6)
@@ -259,15 +283,15 @@ def execute(fields, check_vars):
 		
 		# Run SuperFamiconV to extract data and Inhal to compress it and insert it.
 		
-		sfcv_path = os.path.join(sys._MEIPASS, "superfamiconv")
-		inhal_path = os.path.join(sys._MEIPASS, "inhal")
+		sfcv_path = os.path.join(assets_path, "superfamiconv")
+		inhal_path = os.path.join(assets_path, "inhal")
 		
 		# Run SuperFamiconV for BG1.
 		
 		commands = [
-			[sfcv_path, "palette", "-i", c.TEMP_IMG_OUT_1, "-d", c.TEMP_PALETTE_OUT_1, "-R", "-W", "8", "-H", "8"],
-			[sfcv_path, "tiles", "-i", c.TEMP_IMG_OUT_1, "-d", c.TEMP_TILES_OUT_1, "-p", c.TEMP_PALETTE_OUT_1, "-B", fields["setting_bpp_bg1"].get(), "-W", "8", "-H", "8"],
-			[sfcv_path, "map", "-i", c.TEMP_IMG_OUT_1, "-p", c.TEMP_PALETTE_OUT_1, "-t", c.TEMP_TILES_OUT_1, "-d", c.TEMP_TILEMAP_OUT_1, "-B", fields["setting_bpp_bg1"].get(), "-W", "8", "-H", "8"]
+			[sfcv_path, "palette", "-i", img_1_out_path, "-d", temp_palette_out_1_path, "-R", "-W", "8", "-H", "8"],
+			[sfcv_path, "tiles", "-i", img_1_out_path, "-d", temp_tiles_out_1_path, "-p", temp_palette_out_1_path, "-B", fields["setting_bpp_bg1"].get(), "-W", "8", "-H", "8"],
+			[sfcv_path, "map", "-i", img_1_out_path, "-p", temp_palette_out_1_path, "-t", temp_tiles_out_1_path, "-d", temp_tilemap_out_1_path, "-B", fields["setting_bpp_bg1"].get(), "-W", "8", "-H", "8"]
 		]
 		
 		for command in commands:
@@ -284,7 +308,7 @@ def execute(fields, check_vars):
 		
 		# Insert palette in ROM.
 		
-		with open(c.TEMP_PALETTE_OUT_1, "rb") as f:
+		with open(temp_palette_out_1_path, "rb") as f:
 			pal_data = f.read()
 		
 		rom.seek(c.PAL_25_OFFSET - c.BANK_C0_OFFSET + header)
@@ -293,8 +317,8 @@ def execute(fields, check_vars):
 		# Compress tiles and tilemap with Inhal and insert them.
 		
 		commands = [
-			[inhal_path, "-fast", c.TEMP_TILES_OUT_1, route_rom, f"{c.GFX_25_OFFSET - c.BANK_C0_OFFSET + header}"],
-			[inhal_path, "-fast", c.TEMP_TILEMAP_OUT_1, route_rom, f"{c.ARR_25_OFFSET - c.BANK_C0_OFFSET + header}"]
+			[inhal_path, "-fast", temp_tiles_out_1_path, route_rom, f"{c.GFX_25_OFFSET - c.BANK_C0_OFFSET + header}"],
+			[inhal_path, "-fast", temp_tilemap_out_1_path, route_rom, f"{c.ARR_25_OFFSET - c.BANK_C0_OFFSET + header}"]
 		]
 		
 		for command in commands:
@@ -311,9 +335,9 @@ def execute(fields, check_vars):
 		
 		if route_bg2 != "":
 			commands = [
-				[sfcv_path, "palette", "-i", c.TEMP_IMG_OUT_2, "-d", c.TEMP_PALETTE_OUT_2, "-R", "-W", "8", "-H", "8"],
-				[sfcv_path, "tiles", "-i", c.TEMP_IMG_OUT_2, "-d", c.TEMP_TILES_OUT_2, "-p", c.TEMP_PALETTE_OUT_2, "-B", fields["setting_bpp_bg2"].get(), "-W", "8", "-H", "8"],
-				[sfcv_path, "map", "-i", c.TEMP_IMG_OUT_2, "-p", c.TEMP_PALETTE_OUT_2, "-t", c.TEMP_TILES_OUT_2, "-d", c.TEMP_TILEMAP_OUT_2, "-B", fields["setting_bpp_bg2"].get(), "-W", "8", "-H", "8"]
+				[sfcv_path, "palette", "-i", img_2_out_path, "-d", temp_palette_out_2_path, "-R", "-W", "8", "-H", "8"],
+				[sfcv_path, "tiles", "-i", img_2_out_path, "-d", temp_tiles_out_2_path, "-p", temp_palette_out_2_path, "-B", fields["setting_bpp_bg2"].get(), "-W", "8", "-H", "8"],
+				[sfcv_path, "map", "-i", img_2_out_path, "-p", temp_palette_out_2_path, "-t", temp_tiles_out_2_path, "-d", temp_tilemap_out_2_path, "-B", fields["setting_bpp_bg2"].get(), "-W", "8", "-H", "8"]
 			]
 			
 			for command in commands:
@@ -330,7 +354,7 @@ def execute(fields, check_vars):
 			
 			# Insert palette in ROM.
 		
-			with open(c.TEMP_PALETTE_OUT_2, "rb") as f:
+			with open(temp_palette_out_2_path, "rb") as f:
 				pal_data = f.read()
 			
 			rom.seek(c.PAL_50_OFFSET - c.BANK_C0_OFFSET + header)
@@ -339,8 +363,8 @@ def execute(fields, check_vars):
 			# Compress tiles and tilemap with Inhal and insert them.
 			
 			commands = [
-				[inhal_path, "-fast", c.TEMP_TILES_OUT_2, route_rom, f"{c.GFX_50_OFFSET - c.BANK_C0_OFFSET + header}"],
-				[inhal_path, "-fast", c.TEMP_TILEMAP_OUT_2, route_rom, f"{c.ARR_50_OFFSET - c.BANK_C0_OFFSET + header}"]
+				[inhal_path, "-fast", temp_tiles_out_2_path, route_rom, f"{c.GFX_50_OFFSET - c.BANK_C0_OFFSET + header}"],
+				[inhal_path, "-fast", temp_tilemap_out_2_path, route_rom, f"{c.ARR_50_OFFSET - c.BANK_C0_OFFSET + header}"]
 			]
 			
 			for command in commands:
@@ -358,6 +382,13 @@ def execute(fields, check_vars):
 		for insertion in c.forced_rom_insertions:
 			rom.seek(insertion["offset"] - c.BANK_C0_OFFSET + header)
 			rom.write(bytes(insertion["bytes"]))
+		
+		if route_bg2 == "":
+			
+			# If there is no BG2, don't load it.
+			
+			rom.seek(c.MENU_BG2_OFFSET - c.BANK_C0_OFFSET + header)
+			rom.write(bytes([0x00]))
 		
 		# Insert palette cycling settings.
 		
@@ -417,15 +448,15 @@ def execute(fields, check_vars):
 	
 	# Delete all temporary files.
 	
-	os.remove(c.TEMP_IMG_OUT_1)
+	os.remove(img_1_out_path)
 	
-	for file in c.TEMP_BG1_DATA_OUT:
+	for file in temp_bg1_data_out_paths:
 		os.remove(file)
 	
-	if os.path.exists(c.TEMP_IMG_OUT_2):
-		os.remove(c.TEMP_IMG_OUT_2)
+	if os.path.exists(img_2_out_path):
+		os.remove(img_2_out_path)
 		
-		for file in c.TEMP_BG2_DATA_OUT:
+		for file in temp_bg2_data_out_paths:
 			if os.path.exists(file):
 				os.remove(file)
 	
