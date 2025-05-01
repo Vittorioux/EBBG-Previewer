@@ -246,7 +246,7 @@ def execute(fields, check_vars):
 		
 		# Give little warning that the ROM will be modified.
 		
-		rom.seek(0x2FFFF)
+		rom.seek(0xC2FFFF - c.BANK_C0_OFFSET + header)
 		
 		if rom.read(1)[0] != 0xEA:
 			if not messagebox.askokcancel("Warning", "The ROM will be modified to preview the battle background/s.\n\nContinue?"):
