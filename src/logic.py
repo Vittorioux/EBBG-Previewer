@@ -495,7 +495,7 @@ def run_rom(fields):
 	
 	console.config(state="normal")
 	console.delete("1.0", "end")
-	console.insert("1.0", "[o] Attempting to run the ROM.\n[o] Hold Y in-game to pause the animation.")
+	console.insert("1.0", "[o] Attempting to run the ROM.\n[o] Hold Y in-game to pause the animation, press L to switch between letterbox sizes.")
 	console.config(state="disabled")
 	Popen([route_emulator, route_rom])
 	
