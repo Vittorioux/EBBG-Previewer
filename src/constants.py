@@ -127,6 +127,9 @@ PAL_50_OFFSET = 0xCBD094
 SCR_ENTRY_SIZE = 10
 DST_ENTRY_SIZE = 17
 
+MENU_BG1_OFFSET = 0xC0B5F1
+MENU_BG2_OFFSET = 0xC0B5EC
+
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
@@ -139,10 +142,13 @@ forced_rom_insertions = (
 	
 	{"offset": 0xC0B7EB, "bytes": [0x80, 0x02]},                           # Skip intro logos, gas station screen, title.
 	
-	{"offset": 0xC1ED6A, "bytes": [0x22, 0x68, 0x35, 0xC4, 0x80, 0xFA]},   # Constantly animate the background.
+	# Constantly animate the background, plus detect Y button for pause.
+	{"offset": 0xC1ED6A, "bytes": [0x22, 0x3F, 0xDB, 0xC2, 0x22, 0x56, 0x87, 0xC0, 0xAD, 0x65, 0x00, 0x29, 0x00, 0x40, 0xD0, 0xF4, 0x80, 0xEE]},
 	
-	{"offset": 0xC0B5F1, "bytes": [0x01]},                                 # Load background 1 as layer 1.
-	{"offset": 0xC0B5EC, "bytes": [0x02]},                                 # Load background 2 as layer 2.
+#	{"offset": 0xC1ED6A, "bytes": [0x22, 0x68, 0x35, 0xC4, 0x80, 0xFA]},   # Constantly animate (old one).
+	
+	{"offset": MENU_BG1_OFFSET, "bytes": [0x01]},                          # Load background 1 as layer 1.
+	{"offset": MENU_BG2_OFFSET, "bytes": [0x02]},                          # Load background 2 as layer 2.
 	
 	{"offset": 0xC2FFFF, "bytes": [0xEA]},                                 # "ROM was modified by this program" mark.
 	
