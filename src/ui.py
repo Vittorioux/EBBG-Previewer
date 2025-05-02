@@ -86,7 +86,7 @@ if __name__ == "__main__":
 	# ----------------------- Main frames -----------------------
 	# -----------------------------------------------------------
 	
-	# Top frame: files and 'About' button.
+	# Top frame: files, 'About' button and 'Reset fields' button.
 	
 	top_frame = tk.Frame(root, height=100, bg="lightblue")
 	top_frame.pack(side="top", fill="x")
@@ -135,8 +135,13 @@ if __name__ == "__main__":
 	
 	# Add the 'About' button.
 	
-	button = tk.Button(top_frame, text="About", command=lambda: l.open_about_window(root))
+	button = tk.Button(top_frame, text="About", command=lambda: l.open_about_window(root), width=10)
 	button.grid(row=0, column=3, padx=(50, 5), pady=5)
+	
+	# Add the 'Reset fields' button.
+	
+	button = tk.Button(top_frame, text="Reset fields", command=lambda: l.reset_fields(fields, check_vars), width=10)
+	button.grid(row=1, column=3, padx=(50, 5), pady=5)
 	
 	# -----------------------------------------------------------
 	# ------------------ Middle frame fields --------------------
@@ -339,10 +344,7 @@ if __name__ == "__main__":
 	
 	# Load saved fields from the data file.
 	
-	for key, value in data.items():
-		if key in c.t_field_names:
-			fields[key].delete(0, tk.END)
-			fields[key].insert(0, str(value))
+	l.write_data_to_fields(data, fields)
 	
 	# Update preview image frames (only really makes a difference if both BG fields start empty).
 	
