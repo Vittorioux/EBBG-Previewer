@@ -143,6 +143,11 @@ if __name__ == "__main__":
 	button = tk.Button(top_frame, text="Reset fields", command=lambda: l.reset_fields(fields, check_vars), width=10)
 	button.grid(row=1, column=3, padx=(50, 5), pady=5)
 	
+	# Add the 'Load entry' button.
+	
+	button = tk.Button(top_frame, text="Load entry", command=lambda: l.load_entry_win(fields, check_vars, root), width=10)
+	button.grid(row=2, column=3, padx=(50, 5), pady=5)
+	
 	# -----------------------------------------------------------
 	# ------------------ Middle frame fields --------------------
 	# -----------------------------------------------------------
@@ -340,11 +345,11 @@ if __name__ == "__main__":
 	
 	# Action to perform when closing the application.
 	
-	root.protocol("WM_DELETE_WINDOW", lambda: (l.write_data_file(os.path.join(base_path, DATA_FILE_NAME), fields, root), root.destroy()))
+	root.protocol("WM_DELETE_WINDOW", lambda: (l.write_data_file(os.path.join(base_path, DATA_FILE_NAME), fields, check_vars, root), root.destroy()))
 	
 	# Load saved fields from the data file.
 	
-	l.write_data_to_fields(data, fields)
+	l.write_data_to_fields(data, fields, check_vars)
 	
 	# Update preview image frames (only really makes a difference if both BG fields start empty).
 	
