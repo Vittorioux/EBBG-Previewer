@@ -327,6 +327,175 @@ def load_entry(layer, entry, fields, check_vars):
 	return
 
 # --------------------------------------------------------------------
+# ------------- Show fields in YML format (open window) --------------
+# --------------------------------------------------------------------
+# ------- The code here is pretty bad and needs to be updated. -------
+# --------------------------------------------------------------------
+
+def yml_format_win(fields, check_vars, root):
+	
+	# Open new window.
+	
+	window = tk.Toplevel(root)
+	
+	try:
+		base_path = sys._MEIPASS
+	except Exception:
+		base_path = os.path.abspath("assets")
+	
+	window.iconbitmap(os.path.join(base_path, "icon.ico"))
+	
+	window.title("CoilSnake YML format")
+	window.geometry(f"700x400+{root.winfo_x()+round(root.winfo_width()/2)-350}+{root.winfo_y()+round(root.winfo_height()/2)-200}")
+	window.grab_set()
+	
+	notebook = ttk.Notebook(window)
+	notebook.pack(expand=True, fill="both")
+	
+	# Add tabs.
+	
+	bg_tab = tk.Frame(notebook)
+	notebook.add(bg_tab, text="bg_data_table.yml")
+	
+	scroll_tab = tk.Frame(notebook)
+	notebook.add(scroll_tab, text="bg_scrolling_table.yml")
+	
+	distortion_tab = tk.Frame(notebook)
+	notebook.add(distortion_tab, text="bg_distortion_table.yml")
+	
+	# Add 'bg_data_table' entries.
+	
+	scrollbar = tk.Scrollbar(bg_tab)
+	scrollbar.pack(side="right", fill="y")
+	
+	text = tk.Text(bg_tab, wrap="word", yscrollcommand=scrollbar.set, height=5)
+	text.pack(fill="both", expand=True)
+	
+	scrollbar.config(command=text.yview)
+	
+	lines = []
+	
+	for bg in range(2):
+		lines.append(f"# BG{bg+1}")
+		lines.append("BG_NUM:")
+		
+		for idx, yml_key in enumerate(c.yml_bg_data):
+			line = f"  {yml_key}: "
+			
+			if idx in range(1, 5):
+				if not check_vars[idx + 3 + 8 * bg].get():
+					line += f"BG{bg+1}_DST{idx}"
+				else:
+					line += "0"
+			elif idx in range(11, 15):
+				if not check_vars[idx - 11 + 8 * bg].get():
+					line += f"BG{bg+1}_SCR{idx - 10}"
+				else:
+					line += "0"
+			else:
+				if idx == 0:
+					line += f"{fields[c.m_field_names_palette[0] + f"_bg{bg+1}"].get()}"
+				elif idx == 5:
+					line += f"{c.yml_cycle_type_names[c.CYCLE_TYPE_NAMES.index(fields[c.m_field_names_palette[1] + f"_bg{bg+1}"].get())]}"
+				elif idx in range(6, 11):
+					line += f"{fields[c.m_field_names_palette[idx-4] + f"_bg{bg+1}"].get()}"
+			
+			lines.append(line)
+		
+		lines.append("")
+		
+	yml_entry = "\n".join(lines)
+		
+	text.insert("1.0", yml_entry)
+	
+	text.config(state="disabled")
+		
+	# Add 'bg_scrolling' entries.
+	
+	scrollbar = tk.Scrollbar(scroll_tab)
+	scrollbar.pack(side="right", fill="y")
+	
+	text = tk.Text(scroll_tab, wrap="word", yscrollcommand=scrollbar.set, height=5)
+	text.pack(fill="both", expand=True)
+	
+	scrollbar.config(command=text.yview)
+	
+	lines = []
+	
+	for bg in range(2):
+		
+		lines.append(f"# BG {bg+1}")
+		
+		for i in range(4):
+			if not check_vars[i + 8 * bg].get():
+				lines.append(f"BG{bg+1}_SCR{i+1}:")
+				
+				for idx, yml_key in enumerate(c.yml_bg_scrolling):
+					line = f"  {yml_key}: "
+					
+					line += f"{fields[c.m_field_names_scroll[idx + 1] + f"_bg{bg+1}_scr{i + 1}"].get()}"
+					
+					lines.append(line)
+				
+				lines.append("")
+		
+	yml_entry = "\n".join(lines)
+	
+	text.insert("1.0", yml_entry)
+	
+	text.config(state="disabled")
+	
+	# Add 'bg_distortion' entries.
+	
+	scrollbar = tk.Scrollbar(distortion_tab)
+	scrollbar.pack(side="right", fill="y")
+	
+	text = tk.Text(distortion_tab, wrap="word", yscrollcommand=scrollbar.set, height=5)
+	text.pack(fill="both", expand=True)
+	
+	scrollbar.config(command=text.yview)
+	
+	lines = []
+	
+	for bg in range(2):
+		
+		lines.append(f"# BG {bg+1}")
+		
+		for i in range(4):
+			if not check_vars[i + 4 + 8 * bg].get():
+				lines.append(f"BG{bg+1}_DST{i+1}:")
+				
+				for idx, yml_key in enumerate(c.yml_bg_distortion):
+					line = f"  {yml_key}: "
+					
+					if idx in range(0, 4):
+						line += f"{fields[c.m_field_names_distortion[idx+2] + f"_bg{bg+1}_dst{i+1}"].get()}"
+					elif idx == 4:
+						line += f"{fields[c.m_field_names_distortion[7] + f"_bg{bg+1}_dst{i+1}"].get()}"
+					elif idx == 5:
+						line += f"{c.yml_distortion_type_names[c.DST_TYPE_NAMES.index(fields[c.m_field_names_distortion[1] + f"_bg{bg+1}_dst{i+1}"].get())]}"
+					elif idx == 6:
+						line += f"{fields[c.m_field_names_distortion[10] + f"_bg{bg+1}_dst{i+1}"].get()}"
+					elif idx == 7:
+						line += f"{fields[c.m_field_names_distortion[6] + f"_bg{bg+1}_dst{i+1}"].get()}"
+					elif idx in range(8, 10):
+						line += f"{fields[c.m_field_names_distortion[idx] + f"_bg{bg+1}_dst{i+1}"].get()}"
+					
+					lines.append(line)
+				
+				lines.append("")
+	
+	yml_entry = "\n".join(lines)
+	
+	text.insert("1.0", yml_entry)
+	
+	text.config(state="disabled")
+	
+	window.protocol("WM_DELETE_WINDOW", window.destroy)
+	
+	return
+
+# --------------------------------------------------------------------
 # ---------------------- Update images preview -----------------------
 # --------------------------------------------------------------------
 

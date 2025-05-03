@@ -115,6 +115,24 @@ y_pos: 100
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
 
+# CoilSnake YML key lists.
+
+yml_bg_data = ["Colour depth", "Distortion 1", "Distortion 2", "Distortion 3", "Distortion 4", "Palette Cycle", "Palette Cycle 1 Begin", "Palette Cycle 1 End", "Palette Cycle 2 Begin", "Palette Cycle 2 End", "Palette-changing speed", "Scrolling Movement 1", "Scrolling Movement 2", "Scrolling Movement 3", "Scrolling Movement 4"]
+
+yml_bg_scrolling = ["Duration", "Horizontal Acceleration", "Horizontal Movement", "Vertical Acceleration", "Vertical Movement"]
+
+yml_bg_distortion = ["Ripple Amplitude", "Ripple Amplitude Acceleration", "Ripple Frequency", "Ripple Frequency Acceleration", "Speed", "Type", "Unknown A", "Unknown B", "Unknown C", "Unknown D"]
+
+# CoilSnake YML value lists.
+
+yml_cycle_type_names = ["none", "'1'", "1 + 2", "1 (reverse)"]
+
+yml_distortion_type_names = ["unknown type 0", "horizontal, smooth", "horizontal, interlaced", "vertical, smooth", "unknown type 4"]
+
+# -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
+
 # Other constants.
 
 BANK_C0_OFFSET = 0xC00000

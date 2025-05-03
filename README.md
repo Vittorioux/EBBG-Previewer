@@ -11,6 +11,7 @@ Simple Tkinter application for previewing EarthBound battle backgrounds with an 
 - Click "Run" to open the modified ROM with an emulator (specify the path to the emulator in the corresponding field).
 - Hold Y in-game to pause the animation.
 - Press L in-game to change the letterbox size.
+- To get the settings in the proper CoilSnake YML's format click the 'YML Format' button and copy the parts you need.
 
 ## Dependencies
 This program uses Inhal by devinacker and SuperFamiconV by Optiroc (so big thanks to them!).

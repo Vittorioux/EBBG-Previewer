@@ -148,6 +148,11 @@ if __name__ == "__main__":
 	button = tk.Button(top_frame, text="Load entry", command=lambda: l.load_entry_win(fields, check_vars, root), width=10)
 	button.grid(row=2, column=3, padx=(50, 5), pady=5)
 	
+	# Add the 'YML Format' button.
+	
+	button = tk.Button(top_frame, text="YML Format", command=lambda: l.yml_format_win(fields, check_vars, root), width=10)
+	button.grid(row=3, column=3, padx=(50, 5), pady=5)
+	
 	# -----------------------------------------------------------
 	# ------------------ Middle frame fields --------------------
 	# -----------------------------------------------------------
