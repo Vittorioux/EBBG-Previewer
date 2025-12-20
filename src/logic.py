@@ -82,6 +82,17 @@ def browse_file(field):
 		field.insert(0, route)
 
 # --------------------------------------------------------------------
+# ------------------ Browse folder and fill field --------------------
+# --------------------------------------------------------------------
+
+def browse_directory(field):
+	route = filedialog.askdirectory()
+	
+	if route:
+		field.delete(0, tk.END)
+		field.insert(0, route)
+
+# --------------------------------------------------------------------
 # ------------------------- Write data file --------------------------
 # --------------------------------------------------------------------
 
@@ -112,9 +123,9 @@ def write_data_file(file, fields, check_vars, root):
 		elif isinstance(value, tk.Entry):
 			lines.append(key + ": " + value.get())
 		
-		# Add a separator after the field for the BG2 image.
+		# Add a separator after the field for the enemy group.
 		
-		if key == c.t_field_names[3]:
+		if key == c.t_field_names[4]:
 			lines.append("\n# MIDDLE FRAME FIELDS\n")
 	
 	lines.append("")
@@ -191,6 +202,10 @@ def reset_fields(fields, check_vars):
 	if not messagebox.askokcancel("Reset fields", "All setting fields will be reset to 0.\n\nProceed?"):
 		return
 	
+	# Reset enemy group.
+	fields[c.t_field_names[4]].delete(0, tk.END)
+	fields[c.t_field_names[4]].insert(0, "1")
+	
 	# Set all checkboxes.
 	for var in check_vars:
 		var.set(True)
@@ -234,7 +249,7 @@ def load_entry_win(fields, check_vars, root):
 	
 	window.iconbitmap(os.path.join(base_path, "icon.ico"))
 	
-	window.title("Load entry")
+	window.title("Load vanilla entry")
 	window.geometry(f"300x100+{root.winfo_x()+round(root.winfo_width()/2)-150}+{root.winfo_y()+round(root.winfo_height()/2)-50}")
 	window.grab_set()
 	
@@ -276,6 +291,10 @@ def load_entry_win(fields, check_vars, root):
 # --------------------------------------------------------------------
 
 def load_entry(layer, entry, fields, check_vars):
+	
+	# Fetch console.
+	
+	console = fields["console"]
 	
 	# Iterate through the bg entry.
 	
@@ -322,14 +341,18 @@ def load_entry(layer, entry, fields, check_vars):
 					
 					fields[c.m_field_names_distortion[i+1] + f"_bg{layer}" + f"_dst{dst}"].delete(0, tk.END)
 					fields[c.m_field_names_distortion[i+1] + f"_bg{layer}" + f"_dst{dst}"].insert(0, str(dst_value))
-					
-				
+	
+	console.config(state="normal")
+	console.delete("1.0", "end")
+	console.insert("1.0", "[o] Succesfully inserted vanilla background " + f"{entry}" + " settings into BG" + f"{layer}.")
+	console.config(state="disabled")
+	
 	return
 
 # --------------------------------------------------------------------
 # ------------- Show fields in YML format (open window) --------------
 # --------------------------------------------------------------------
-# ------- The code here is pretty bad and needs to be updated. -------
+# ------------------- The code here is pretty bad --------------------
 # --------------------------------------------------------------------
 
 def yml_format_win(fields, check_vars, root):
@@ -496,6 +519,371 @@ def yml_format_win(fields, check_vars, root):
 	return
 
 # --------------------------------------------------------------------
+# ------------------- Load from YML (open window) --------------------
+# --------------------------------------------------------------------
+
+def load_yml_win(fields, check_vars, root):
+	
+	# Open new window.
+	
+	window = tk.Toplevel(root)
+	
+	try:
+		base_path = sys._MEIPASS
+	except Exception:
+		base_path = os.path.abspath("assets")
+	
+	window.iconbitmap(os.path.join(base_path, "icon.ico"))
+	
+	window.title("Load from CoilSnake YML format")
+	window.geometry(f"700x400+{root.winfo_x()+round(root.winfo_width()/2)-350}+{root.winfo_y()+round(root.winfo_height()/2)-200}")
+	window.grab_set()
+	
+	window_top_frame = tk.Frame(window, height=20)
+	window_top_frame.pack(side="top", fill="x")
+	
+	window_middle_frame = tk.Frame(window, height=5)
+	window_middle_frame.pack(side="top", fill="x")
+	
+	window_bottom_frame = tk.Frame(window, height=15)
+	window_bottom_frame.pack(side="top", fill="x")
+	
+	controls_frame = tk.Frame(window_bottom_frame)
+	controls_frame.pack(expand=True)
+	
+	scrollbar = tk.Scrollbar(window_top_frame)
+	scrollbar.pack(side="right", fill="y")
+	
+	text = tk.Text(window_top_frame, wrap="word", yscrollcommand=scrollbar.set, height=18)
+	text.pack(fill="both", expand=True)
+	
+	scrollbar.config(command=text.yview)
+	
+	structure_type = None
+	
+	status_label = tk.Label(window_middle_frame, text="", anchor="w")
+	status_label.pack(fill="x", padx=10, pady=10)
+	
+	bg_slot_var = tk.StringVar()
+	bg_slot_combo = ttk.Combobox(controls_frame, textvariable=bg_slot_var, state="readonly", width=5)
+	bg_slot_combo.pack(side="left", padx=5, pady=5)
+	
+	slot_var = tk.StringVar()
+	slot_combo = ttk.Combobox(controls_frame, textvariable=slot_var, state="readonly", width=5)
+	slot_combo.pack(side="left", padx=5, pady=5)
+	
+	load_button = tk.Button(controls_frame, text="Load into entry", state="disabled", command=lambda: fill_entry_from_yml(structure_type, int(bg_slot_var.get()), slot_var.get(), text.get("1.0", "end-1c"), fields, check_vars))
+	load_button.pack(side="left", padx=10, pady=5)
+	
+	def on_text_edit(event):
+		nonlocal structure_type
+		
+		content = text.get("1.0", "end-1c")
+	
+		if validate_yml_structure(content, c.yml_bg_data):
+			structure_type = c.BG_DATA
+			status_label.config(text="Correct 'bg_data_table.yml' entry detected (select BG to load into).")
+			bg_slot_combo["values"] = ("1", "2")
+			bg_slot_var.set("1")
+			slot_combo["values"] = ()
+			slot_var.set("")
+			load_button.config(state="normal")
+		elif validate_yml_structure(content, c.yml_bg_scrolling):
+			structure_type = c.BG_SCROLLING
+			status_label.config(text="Correct 'bg_scrolling_table.yml' entry detected (select BG + entry to load into).")
+			bg_slot_combo["values"] = ("1", "2")
+			bg_slot_var.set("1")
+			slot_combo["values"] = ("1", "2", "3", "4")
+			slot_var.set("1")
+			load_button.config(state="normal")
+		elif validate_yml_structure(content, c.yml_bg_distortion):
+			structure_type = c.BG_DISTORTION
+			status_label.config(text="Correct 'bg_distortion_table.yml' entry detected (select BG + entry to load into).")
+			bg_slot_combo["values"] = ("1", "2")
+			bg_slot_var.set("1")
+			slot_combo["values"] = ("1", "2", "3", "4")
+			slot_var.set("1")
+			load_button.config(state="normal")
+		else:
+			structure_type = None
+			status_label.config(text="")
+			bg_slot_combo["values"] = ()
+			bg_slot_var.set("")
+			slot_combo["values"] = ()
+			slot_var.set("")
+			load_button.config(state="disabled")
+	
+		text.edit_modified(False)
+	
+	text.bind("<<Modified>>", on_text_edit)
+	
+	return
+
+# --------------------------------------------------------------------
+# ----------------- Auxiliar YML validation function -----------------
+# --------------------------------------------------------------------
+
+# Validate entries from 'bg_data_table.yml'.
+
+def validate_yml_structure(text, fields):
+	lines = text.strip().splitlines()
+	
+	if len(lines) != len(fields) + 1:
+		return False
+	
+	if not lines[0].strip().endswith(":"):
+		return False
+	
+	found_fields = []
+	
+	for line in lines[1:]:
+		if ":" not in line:
+			return False
+		
+		key = line.split(":", 1)[0].strip()
+		found_fields.append(key)
+	
+	return found_fields == fields
+
+# --------------------------------------------------------------------
+# -------------------- Fill fields from YML text ---------------------
+# --------------------------------------------------------------------
+# ------------------- Again, not the best code... --------------------
+# --------------------------------------------------------------------
+
+def fill_entry_from_yml(structure_type, bg_entry, entry, text, fields, check_vars):
+	
+	if entry != "" and entry != None:
+		entry = int(entry)
+	
+	lines = text.strip().splitlines()
+	
+	values = []
+	
+	for line in lines[1:]:
+		key, value = line.split(":", 1)
+		values.append(value.strip())
+	
+	# Load into a 'Palettes' entry.
+	
+	if structure_type == c.BG_DATA:
+		for idx, value in enumerate(values):
+			if idx == 0:
+				if bg_entry == 1:
+					fields[c.m_field_names_palette[idx] + f"_bg{bg_entry}"].current(int(value) // 2 - 1)
+			elif idx == 5:
+				fields[c.m_field_names_palette[1] + f"_bg{bg_entry}"].current(c.yml_cycle_type_names.index(value))
+			elif idx > 5 and idx < 11:
+				fields[c.m_field_names_palette[idx-4] + f"_bg{bg_entry}"].delete(0, tk.END)
+				fields[c.m_field_names_palette[idx-4] + f"_bg{bg_entry}"].insert(0, value)
+	
+	# Load into a 'Scroll' entry.
+	
+	elif structure_type == c.BG_SCROLLING:
+		
+		check_vars[(bg_entry - 1)*8 + entry - 1].set(False)
+		
+		for idx, value in enumerate(values):
+			fields[c.m_field_names_scroll[idx+1] + f"_bg{bg_entry}" + f"_scr{entry}"].delete(0, tk.END)
+			fields[c.m_field_names_scroll[idx+1] + f"_bg{bg_entry}" + f"_scr{entry}"].insert(0, value)
+	
+	# Load into a 'Distortion' entry.
+	
+	elif structure_type == c.BG_DISTORTION:
+		
+		check_vars[(bg_entry - 1)*8 + entry + 3].set(False)
+		
+		for idx, value in enumerate(values):
+			if idx < 4:
+				fields[c.m_field_names_distortion[idx+2] + f"_bg{bg_entry}" + f"_dst{entry}"].delete(0, tk.END)
+				fields[c.m_field_names_distortion[idx+2] + f"_bg{bg_entry}" + f"_dst{entry}"].insert(0, value)
+			elif idx == 4:
+				fields[c.m_field_names_distortion[7] + f"_bg{bg_entry}" + f"_dst{entry}"].delete(0, tk.END)
+				fields[c.m_field_names_distortion[7] + f"_bg{bg_entry}" + f"_dst{entry}"].insert(0, value)
+			elif idx == 5:
+				fields[c.m_field_names_distortion[1] + f"_bg{bg_entry}" + f"_dst{entry}"].current(c.yml_distortion_type_names.index(value))
+			elif idx == 6:
+				fields[c.m_field_names_distortion[10] + f"_bg{bg_entry}" + f"_dst{entry}"].delete(0, tk.END)
+				fields[c.m_field_names_distortion[10] + f"_bg{bg_entry}" + f"_dst{entry}"].insert(0, value)
+			elif idx == 7:
+				fields[c.m_field_names_distortion[6] + f"_bg{bg_entry}" + f"_dst{entry}"].delete(0, tk.END)
+				fields[c.m_field_names_distortion[6] + f"_bg{bg_entry}" + f"_dst{entry}"].insert(0, value)
+			elif idx == 8:
+				fields[c.m_field_names_distortion[8] + f"_bg{bg_entry}" + f"_dst{entry}"].delete(0, tk.END)
+				fields[c.m_field_names_distortion[8] + f"_bg{bg_entry}" + f"_dst{entry}"].insert(0, value)
+			elif idx == 9:
+				fields[c.m_field_names_distortion[9] + f"_bg{bg_entry}" + f"_dst{entry}"].delete(0, tk.END)
+				fields[c.m_field_names_distortion[9] + f"_bg{bg_entry}" + f"_dst{entry}"].insert(0, value)
+	
+	return
+
+# --------------------------------------------------------------------
+# ------------ Load from CoilSnake project (open window) -------------
+# --------------------------------------------------------------------
+
+def load_from_project_win(project_path, fields, check_vars, root):
+	
+	# Open new window.
+	
+	window = tk.Toplevel(root)
+	
+	try:
+		base_path = sys._MEIPASS
+	except Exception:
+		base_path = os.path.abspath("assets")
+	
+	window.iconbitmap(os.path.join(base_path, "icon.ico"))
+	
+	window.title("Load from CoilSnake project")
+	window.geometry(f"700x100+{root.winfo_x()+round(root.winfo_width()/2)-350}+{root.winfo_y()+round(root.winfo_height()/2)-50}")
+	window.grab_set()
+	
+	window_top_frame = tk.Frame(window, height=20)
+	window_top_frame.pack(side="top", fill="x")
+	
+	window_bottom_frame = tk.Frame(window, height=20)
+	window_bottom_frame.pack(side="top", fill="x")
+	
+	container = tk.Frame(window_bottom_frame)
+	container.pack(expand=True)
+	
+	label = tk.Label(window_top_frame, text="CoilSnake project directory:")
+	label.grid(row=0, column=0, padx=5, pady=15, sticky="e")
+	
+	entry = tk.Entry(window_top_frame, textvariable=project_path)
+	entry.grid(row=0, column=1, padx=5, pady=15, sticky="ew")
+	
+	button = tk.Button(window_top_frame, text="Browse", command=lambda: browse_directory(entry))
+	button.grid(row=0, column=2, padx=10, pady=15)
+	
+	window_top_frame.grid_columnconfigure(1, weight=1)
+	
+	slot_combo = ttk.Combobox(container, values=[str(i) for i in range(327)], state="readonly", width=10)
+	slot_combo.pack(side="left", padx=5, pady=5)
+	slot_combo.current(0)
+	
+	button = tk.Button(container, text="Load into BG1", command=lambda: load_from_project(entry.get(), fields, check_vars, slot_combo.get(), 1))
+	button.pack(side="left", padx=10, pady=5)
+	
+	button = tk.Button(container, text="Load into BG2", command=lambda: load_from_project(entry.get(), fields, check_vars, slot_combo.get(), 2))
+	button.pack(side="left", padx=10, pady=5)
+	
+	return
+
+# --------------------------------------------------------------------
+# ---------------- Fill all fields from project data -----------------
+# --------------------------------------------------------------------
+
+def load_from_project(path, fields, check_vars, entry, layer):
+	
+	# Validate project folder.
+	
+	if not os.path.isdir(path):
+		messagebox.showerror("Error", "Invalid project")
+		return
+	
+	for filename in c.valid_project_files:
+		if not os.path.isfile(os.path.join(path, filename)):
+			messagebox.showerror("Error", "Invalid project")
+			return
+	
+	# Fetch console.
+	
+	console = fields["console"]
+	
+	with open(os.path.join(path, "bg_data_table.yml"), encoding="utf-8") as f:
+		bg_data_text = f.read()
+	
+	with open(os.path.join(path, "bg_scrolling_table.yml"), encoding="utf-8") as f:
+		bg_scrolling_text = f.read()
+
+	with open(os.path.join(path, "bg_distortion_table.yml"), encoding="utf-8") as f:
+		bg_distortion_text = f.read()
+	
+	bg_entry_text = extract_yml_entry(bg_data_text, entry)
+	
+	if bg_entry_text == None:
+		raise_error(console, 8)
+		return
+	
+	# Load 'Palettes' entry.
+	
+	fill_entry_from_yml(c.BG_DATA, layer, None, bg_entry_text, fields, check_vars)
+	
+	# Extract values from entry
+	
+	lines = bg_entry_text.strip().splitlines()
+	
+	values = []
+	
+	for line in lines[1:]:
+		key, value = line.split(":", 1)
+		values.append(value.strip())
+	
+	# Load 'Scroll' entries.
+	
+	for idx, scroll_id in enumerate([int(v) for v in values[11:15]]):
+		scroll_entry_text = extract_yml_entry(bg_scrolling_text, scroll_id)
+		
+		if scroll_entry_text is None:
+			raise_error(console, 8)
+			return
+		
+		fill_entry_from_yml(c.BG_SCROLLING, layer, idx+1, scroll_entry_text, fields, check_vars)
+		
+		if scroll_id == 0:
+			check_vars[(layer - 1)*8 + idx].set(True)
+		else:
+			check_vars[(layer - 1)*8 + idx].set(False)
+	
+	# Load 'Distortion' entries.
+	
+	for idx, distortion_id in enumerate([int(v) for v in values[1:5]]):
+		distortion_entry_text = extract_yml_entry(bg_distortion_text, distortion_id)
+		
+		if distortion_entry_text is None:
+			raise_error(console, 8)
+			return
+		
+		fill_entry_from_yml(c.BG_DISTORTION, layer, idx+1, distortion_entry_text, fields, check_vars)
+		
+		if distortion_id == 0:
+			check_vars[(layer - 1)*8 + idx + 4].set(True)
+		else:
+			check_vars[(layer - 1)*8 + idx + 4].set(False)
+	
+	console.config(state="normal")
+	console.delete("1.0", "end")
+	console.insert("1.0", "[o] Succesfully inserted project background " + f"{entry}" + " settings into BG" + f"{layer}.")
+	console.config(state="disabled")
+	
+	return
+
+# --------------------------------------------------------------------
+# -------------- Auxiliar YML entry extraction function --------------
+# --------------------------------------------------------------------
+
+def extract_yml_entry(text, idx):
+	
+	lines = text.splitlines()
+	
+	block = []
+	in_block = False
+	
+	for line in lines:
+		if line.strip() == f"{idx}:":
+			in_block = True
+			block.append(line)
+			continue
+		
+		if in_block:
+			if line.strip().endswith(":") and line.strip()[:-1].isdigit():
+				break
+			block.append(line)
+	
+	return "\n".join(block) if block else None
+
+# --------------------------------------------------------------------
 # ---------------------- Update images preview -----------------------
 # --------------------------------------------------------------------
 
@@ -608,6 +996,12 @@ def execute(fields, check_vars):
 					if rom.read(1)[0] != byte:
 						raise_error(console, 1)
 						return
+		
+		# Raise error if the enemy group is invalid.
+		
+		if int(fields[c.t_field_names[4]].get()) > c.MAX_ENEMY_GROUP:
+			raise_error(console, 7)
+			return
 		
 		# Give little warning that the ROM will be modified.
 		
@@ -748,12 +1142,38 @@ def execute(fields, check_vars):
 			rom.seek(insertion["offset"] - c.BANK_C0_OFFSET + header)
 			rom.write(bytes(insertion["bytes"]))
 		
+		# Insert dynamic data.
+		
+		for insertion in c.dynamic_rom_insertions:
+			if insertion["pointer_type"] == "dp":
+				pointer_address = insertion["pointer_address"]
+				
+				rom.seek(pointer_address - c.BANK_C0_OFFSET + header)
+				block = rom.read(7)
+				
+				address = ((block[6] << 16) | (block[2] << 8) | block[1]) + insertion["insertion_offset"]
+				
+				rom.seek(address - c.BANK_C0_OFFSET + header)
+				rom.write(bytes(insertion["bytes"]))
+		
+		# Insert enemy group to load.
+		
+		d = struct.pack("<H", int(fields[c.t_field_names[4]].get()))
+		
+		rom.seek(0xC4DB4E - c.BANK_C0_OFFSET + header)
+		rom.write(d)
+		
 		if route_bg2 == "":
 			
 			# If there is no BG2, don't load it.
 			
 			rom.seek(c.MENU_BG2_OFFSET - c.BANK_C0_OFFSET + header)
 			rom.write(bytes([0x00]))
+			
+			# Don't use it in battle either.
+			
+			rom.seek(0xC248BE - c.BANK_C0_OFFSET + header)
+			rom.write(bytes([0x00, 0x00]))
 		
 		# Insert palette cycling settings.
 		
@@ -860,7 +1280,7 @@ def run_rom(fields):
 	
 	console.config(state="normal")
 	console.delete("1.0", "end")
-	console.insert("1.0", "[o] Attempting to run the ROM.\n[o] Hold Y in-game to pause the animation, press L to switch between letterbox sizes.")
+	console.insert("1.0", "[o] Attempting to run the ROM.\n[o] Hold Y in-game to pause the animation, press L to switch between letterbox sizes. Press Start to preview a battle against the specified enemy group.")
 	console.config(state="disabled")
 	Popen([route_emulator, route_rom])
 	
@@ -893,6 +1313,10 @@ def raise_error(console, code):
 		msg = "The execution was aborted."
 	elif code == 6:
 		msg = "One or more of the specified image files isn't in indexed palette mode."
+	elif code == 7:
+		msg = "The specified enemy group exceeds the vanilla maximum (483)."
+	elif code == 8:
+		msg = "One or more of the YML entries in the Project has a wrong format."
 	else:
 		msg = "An unknown exception occured (check field values or try again)."
 	

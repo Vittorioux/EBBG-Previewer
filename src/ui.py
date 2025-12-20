@@ -86,10 +86,15 @@ if __name__ == "__main__":
 	# ----------------------- Main frames -----------------------
 	# -----------------------------------------------------------
 	
-	# Top frame: files, 'About' button and 'Reset fields' button.
+	# Top frame: first four fields.
 	
 	top_frame = tk.Frame(root, height=100, bg="lightblue")
 	top_frame.pack(side="top", fill="x")
+	
+	# Extra top frame for the new options.
+	
+	extra_frame = tk.Frame(root, height=100, bg="lightblue")
+	extra_frame.pack(side="top", fill="x")
 	
 	separator = tk.Frame(root, height=2, bg="black")
 	separator.pack(fill="x")
@@ -152,6 +157,35 @@ if __name__ == "__main__":
 	
 	button = tk.Button(top_frame, text="YML Format", command=lambda: l.yml_format_win(fields, check_vars, root), width=10)
 	button.grid(row=3, column=3, padx=(50, 5), pady=5)
+	
+	# Add the 'Enemy Group' field.
+	
+	label = tk.Label(extra_frame, text="Enemy Group:", bg="lightblue")
+	label.grid(row=0, column=0, padx=5, pady=5, sticky="e")
+	
+	entry = tk.Entry(extra_frame, width=10)
+	entry.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+	
+	entry.delete(0, tk.END)
+	entry.insert(0, "1")
+	
+	fields[c.t_field_names[4]] = entry
+	
+	# Auxiliar variable.
+	
+	project_path = tk.StringVar(master=root)
+	
+	# Add the 'Load from project' button.
+	
+	button = tk.Button(extra_frame, text="Load from project", command=lambda: l.load_from_project_win(project_path, fields, check_vars, root), width=20)
+	button.grid(row=0, column=2, padx=5, pady=5, sticky='e')
+	
+	# Add the 'Load YML' button.
+	
+	button = tk.Button(extra_frame, text="Load from YML", command=lambda: l.load_yml_win(fields, check_vars, root), width=15)
+	button.grid(row=0, column=3, padx=(15, 5), pady=5, sticky='e')
+	
+	extra_frame.grid_columnconfigure(1, weight=1)
 	
 	# -----------------------------------------------------------
 	# ------------------ Middle frame fields --------------------
