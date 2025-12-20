@@ -680,7 +680,10 @@ def fill_entry_from_yml(structure_type, bg_entry, entry, text, fields, check_var
 				if bg_entry == 1:
 					fields[c.m_field_names_palette[idx] + f"_bg{bg_entry}"].current(int(value) // 2 - 1)
 			elif idx == 5:
-				fields[c.m_field_names_palette[1] + f"_bg{bg_entry}"].current(c.yml_cycle_type_names.index(value))
+				if value.isdigit():
+					fields[c.m_field_names_palette[1] + f"_bg{bg_entry}"].current(value)
+				else:
+					fields[c.m_field_names_palette[1] + f"_bg{bg_entry}"].current(c.yml_cycle_type_names.index(value))
 			elif idx > 5 and idx < 11:
 				fields[c.m_field_names_palette[idx-4] + f"_bg{bg_entry}"].delete(0, tk.END)
 				fields[c.m_field_names_palette[idx-4] + f"_bg{bg_entry}"].insert(0, value)
@@ -709,7 +712,10 @@ def fill_entry_from_yml(structure_type, bg_entry, entry, text, fields, check_var
 				fields[c.m_field_names_distortion[7] + f"_bg{bg_entry}" + f"_dst{entry}"].delete(0, tk.END)
 				fields[c.m_field_names_distortion[7] + f"_bg{bg_entry}" + f"_dst{entry}"].insert(0, value)
 			elif idx == 5:
-				fields[c.m_field_names_distortion[1] + f"_bg{bg_entry}" + f"_dst{entry}"].current(c.yml_distortion_type_names.index(value))
+				if value.isdigit():
+					fields[c.m_field_names_distortion[1] + f"_bg{bg_entry}" + f"_dst{entry}"].current(value)
+				else:
+					fields[c.m_field_names_distortion[1] + f"_bg{bg_entry}" + f"_dst{entry}"].current(c.yml_distortion_type_names.index(value))
 			elif idx == 6:
 				fields[c.m_field_names_distortion[10] + f"_bg{bg_entry}" + f"_dst{entry}"].delete(0, tk.END)
 				fields[c.m_field_names_distortion[10] + f"_bg{bg_entry}" + f"_dst{entry}"].insert(0, value)
