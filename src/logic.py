@@ -626,7 +626,12 @@ def load_yml_win(fields, check_vars, root):
 # Validate entries from 'bg_data_table.yml'.
 
 def validate_yml_structure(text, fields):
-	lines = text.strip().splitlines()
+	lines = []
+	
+	for raw_line in text.splitlines():
+		line = raw_line.split("#", 1)[0].rstrip()
+		if line.strip():
+			lines.append(line)
 	
 	if len(lines) != len(fields) + 1:
 		return False
@@ -660,7 +665,10 @@ def fill_entry_from_yml(structure_type, bg_entry, entry, text, fields, check_var
 	
 	values = []
 	
-	for line in lines[1:]:
+	for raw_line in lines[1:]:
+		
+		line = raw_line.split("#", 1)[0].rstrip()
+		
 		key, value = line.split(":", 1)
 		values.append(value.strip())
 	
@@ -816,7 +824,10 @@ def load_from_project(path, fields, check_vars, entry, layer):
 	
 	values = []
 	
-	for line in lines[1:]:
+	for raw_line in lines[1:]:
+		
+		line = raw_line.split("#", 1)[0].rstrip()
+		
 		key, value = line.split(":", 1)
 		values.append(value.strip())
 	
@@ -870,7 +881,10 @@ def extract_yml_entry(text, idx):
 	block = []
 	in_block = False
 	
-	for line in lines:
+	for raw_line in lines:
+		
+		line = raw_line.split("#", 1)[0].rstrip()
+		
 		if line.strip() == f"{idx}:":
 			in_block = True
 			block.append(line)
