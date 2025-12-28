@@ -957,15 +957,21 @@ def execute(fields, check_vars):
 	img_2_out_path = os.path.join(base_path, c.TEMP_IMG_OUT_2)
 	img_out_paths = [img_1_out_path, img_2_out_path]
 	
+	img_1_out_gray_path = os.path.join(base_path, c.TEMP_IMG_OUT_GRAY_1)
+	img_2_out_gray_path = os.path.join(base_path, c.TEMP_IMG_OUT_GRAY_2)
+	img_out_gray_paths = [img_1_out_gray_path, img_2_out_gray_path]
+	
+	temp_palette_out_1_gray_path = os.path.join(base_path, c.TEMP_PALETTE_OUT_GRAY_1)
 	temp_palette_out_1_path = os.path.join(base_path, c.TEMP_PALETTE_OUT_1)
 	temp_tiles_out_1_path = os.path.join(base_path, c.TEMP_TILES_OUT_1)
 	temp_tilemap_out_1_path = os.path.join(base_path, c.TEMP_TILEMAP_OUT_1)
-	temp_bg1_data_out_paths = [temp_palette_out_1_path, temp_tiles_out_1_path, temp_tilemap_out_1_path]
+	temp_bg1_data_out_paths = [temp_palette_out_1_path, temp_palette_out_1_gray_path, temp_tiles_out_1_path, temp_tilemap_out_1_path]
 	
+	temp_palette_out_2_gray_path = os.path.join(base_path, c.TEMP_PALETTE_OUT_GRAY_2)
 	temp_palette_out_2_path = os.path.join(base_path, c.TEMP_PALETTE_OUT_2)
 	temp_tiles_out_2_path = os.path.join(base_path, c.TEMP_TILES_OUT_2)
 	temp_tilemap_out_2_path = os.path.join(base_path, c.TEMP_TILEMAP_OUT_2)
-	temp_bg2_data_out_paths = [temp_palette_out_2_path, temp_tiles_out_2_path, temp_tilemap_out_2_path]
+	temp_bg2_data_out_paths = [temp_palette_out_2_path, temp_palette_out_2_gray_path, temp_tiles_out_2_path, temp_tilemap_out_2_path]
 	
 	# Fetch files.
 	
@@ -1056,6 +1062,33 @@ def execute(fields, check_vars):
 			else:
 				raise_error(console, 6)
 		
+		# Make an alternative image in a gray scale to be used for superfamiconv tiles (dirty workaround).
+		
+		for idx, img in enumerate(imgs):
+			if img.mode == 'P':
+				pal = img.getpalette()
+				num_colors = len(pal) // 3
+
+				new_pal = []
+
+				if num_colors == 1:
+					gray = 255
+					gray = round_to_nearest_8(gray)
+					new_pal.extend([gray, gray, gray])
+				else:
+					for i in range(num_colors):
+						t = i / (num_colors - 1)
+						gray = int(255 * (1 - t))
+
+						gray = round_to_nearest_8(gray)
+						new_pal.extend([gray, gray, gray])
+
+				img.putpalette(new_pal)
+				img.save(img_out_gray_paths[idx])
+
+			else:
+				raise_error(console, 6)
+		
 		# Show an error message by default, you shouldn't see it if the process goes fine.
 		
 		raise_error(console, -1)
@@ -1068,9 +1101,10 @@ def execute(fields, check_vars):
 		# Run SuperFamiconV for BG1.
 		
 		commands = [
+			[sfcv_path, "palette", "-i", img_1_out_gray_path, "-d", temp_palette_out_1_gray_path, "-R", "-W", "8", "-H", "8"],
+			[sfcv_path, "tiles", "-i", img_1_out_gray_path, "-d", temp_tiles_out_1_path, "-p", temp_palette_out_1_gray_path, "-B", fields["setting_bpp_bg1"].get(), "-W", "8", "-H", "8"],
+			[sfcv_path, "map", "-i", img_1_out_gray_path, "-p", temp_palette_out_1_gray_path, "-t", temp_tiles_out_1_path, "-d", temp_tilemap_out_1_path, "-B", fields["setting_bpp_bg1"].get(), "-W", "8", "-H", "8"],
 			[sfcv_path, "palette", "-i", img_1_out_path, "-d", temp_palette_out_1_path, "-R", "-W", "8", "-H", "8"],
-			[sfcv_path, "tiles", "-i", img_1_out_path, "-d", temp_tiles_out_1_path, "-p", temp_palette_out_1_path, "-B", fields["setting_bpp_bg1"].get(), "-W", "8", "-H", "8"],
-			[sfcv_path, "map", "-i", img_1_out_path, "-p", temp_palette_out_1_path, "-t", temp_tiles_out_1_path, "-d", temp_tilemap_out_1_path, "-B", fields["setting_bpp_bg1"].get(), "-W", "8", "-H", "8"]
 		]
 		
 		for command in commands:
@@ -1114,9 +1148,10 @@ def execute(fields, check_vars):
 		
 		if route_bg2 != "":
 			commands = [
+				[sfcv_path, "palette", "-i", img_2_out_gray_path, "-d", temp_palette_out_2_gray_path, "-R", "-W", "8", "-H", "8"],
+				[sfcv_path, "tiles", "-i", img_2_out_gray_path, "-d", temp_tiles_out_2_path, "-p", temp_palette_out_2_gray_path, "-B", fields["setting_bpp_bg2"].get(), "-W", "8", "-H", "8"],
+				[sfcv_path, "map", "-i", img_2_out_gray_path, "-p", temp_palette_out_2_gray_path, "-t", temp_tiles_out_2_path, "-d", temp_tilemap_out_2_path, "-B", fields["setting_bpp_bg2"].get(), "-W", "8", "-H", "8"],
 				[sfcv_path, "palette", "-i", img_2_out_path, "-d", temp_palette_out_2_path, "-R", "-W", "8", "-H", "8"],
-				[sfcv_path, "tiles", "-i", img_2_out_path, "-d", temp_tiles_out_2_path, "-p", temp_palette_out_2_path, "-B", fields["setting_bpp_bg2"].get(), "-W", "8", "-H", "8"],
-				[sfcv_path, "map", "-i", img_2_out_path, "-p", temp_palette_out_2_path, "-t", temp_tiles_out_2_path, "-d", temp_tilemap_out_2_path, "-B", fields["setting_bpp_bg2"].get(), "-W", "8", "-H", "8"]
 			]
 			
 			for command in commands:
@@ -1254,12 +1289,14 @@ def execute(fields, check_vars):
 	# Delete all temporary files.
 	
 	os.remove(img_1_out_path)
+	os.remove(img_1_out_gray_path)
 	
 	for file in temp_bg1_data_out_paths:
 		os.remove(file)
 	
 	if os.path.exists(img_2_out_path):
 		os.remove(img_2_out_path)
+		os.remove(img_2_out_gray_path)
 		
 		for file in temp_bg2_data_out_paths:
 			if os.path.exists(file):

@@ -34,11 +34,13 @@ DATA_FILE_NAME = os.path.join(DATA_FOLDER_NAME, "data.conf")
 # SuperFamiconV will produce some temporary files.
 
 # BG1.
+TEMP_PALETTE_OUT_GRAY_1 = os.path.join(DATA_FOLDER_NAME, "temp_palette_out_gray_1.bin")
 TEMP_PALETTE_OUT_1 = os.path.join(DATA_FOLDER_NAME, "temp_palette_out_1.bin")
 TEMP_TILES_OUT_1 = os.path.join(DATA_FOLDER_NAME, "temp_tiles_out_1.bin")
 TEMP_TILEMAP_OUT_1 = os.path.join(DATA_FOLDER_NAME, "temp_tilemap_out_1.bin")
 
 #BG2.
+TEMP_PALETTE_OUT_GRAY_2 = os.path.join(DATA_FOLDER_NAME, "temp_palette_out_gray_2.bin")
 TEMP_PALETTE_OUT_2 = os.path.join(DATA_FOLDER_NAME, "temp_palette_out_2.bin")
 TEMP_TILES_OUT_2 = os.path.join(DATA_FOLDER_NAME, "temp_tiles_out_2.bin")
 TEMP_TILEMAP_OUT_2 = os.path.join(DATA_FOLDER_NAME, "temp_tilemap_out_2.bin")
@@ -46,6 +48,9 @@ TEMP_TILEMAP_OUT_2 = os.path.join(DATA_FOLDER_NAME, "temp_tilemap_out_2.bin")
 # Temp images with corrected formats.
 TEMP_IMG_OUT_1 = os.path.join(DATA_FOLDER_NAME, "temp_img_out_1.png")
 TEMP_IMG_OUT_2 = os.path.join(DATA_FOLDER_NAME, "temp_img_out_2.png")
+
+TEMP_IMG_OUT_GRAY_1 = os.path.join(DATA_FOLDER_NAME, "temp_img_out_gray_1.png")
+TEMP_IMG_OUT_GRAY_2 = os.path.join(DATA_FOLDER_NAME, "temp_img_out_gray_2.png")
 
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
