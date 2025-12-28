@@ -58,7 +58,7 @@ TEMP_IMG_OUT_GRAY_2 = os.path.join(DATA_FOLDER_NAME, "temp_img_out_gray_2.png")
 
 # Program version.
 
-VERSION = "1.03"
+VERSION = "1.031"
 
 # 'About' text.
 
